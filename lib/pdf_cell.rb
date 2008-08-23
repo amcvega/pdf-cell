@@ -135,13 +135,43 @@ module PDF::Cell
     # * +font_size+ - Specify the font_size of the entire document.  Defaults to 10
     # * +border+  -  Specify if there should be an outer border.  Defaults to false
     def build(options = {}, &block)
+      paginate = options.delete(:paginate)
       set_options options.reverse_merge(:font_size => 10)
-      instance_eval(&block)
-      self.right_base_margin = left_base_margin + options[:width] if options[:width]
-      if options[:border]
-        draw_cell(left_base_margin, upper_limit, right_base_margin, lower_limit)
+      i = 0
+      end_loop = false      
+      if paginate
+        pdf.extend(Transaction::Simple)
+        pdf.start_transaction
       end
-      pdf.y = lower_limit - 10
+      until end_loop
+        i += 1
+        instance_eval(&block)
+        self.right_base_margin = left_base_margin + options[:width] if options[:width]
+        if options[:border]
+          draw_cell(left_base_margin, upper_limit, right_base_margin, lower_limit)
+        end
+        pdf.y = lower_limit - 10
+        puts "Loop count: #{i}"
+        puts "Lower limit: #{lower_limit}"
+        
+        if paginate 
+          if lower_limit <= 50 && pdf.transaction_open?
+            puts "Rewinding transaction..."
+            pdf.rewind_transaction
+            puts "Start new page..."
+            pdf.start_new_page(true)
+            self.left_base_margin = pdf.absolute_left_margin
+            self.right_base_margin = pdf.absolute_right_margin
+            self.x = left_base_margin
+            puts "Setting Y-values: #{pdf.y}"
+            self.upper_limit = self.y = self.lower_limit = pdf.y  
+          else
+            end_loop = true
+          end
+        else
+          end_loop = true
+        end
+      end
     end
     
     # This provides a header for the base cell.  You can only use it for the top-level cell
