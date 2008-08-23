@@ -1,5 +1,6 @@
 #require 'ruby-debug'
 require 'pdf/simpletable'
+require 'iconv'
 module PDF::Cell
   class Abstract
     attr_accessor :upper_limit, :lower_limit, :left_base_margin, :x, :y, 
@@ -191,7 +192,7 @@ module PDF::Cell
         end
       end      
     end
-    CONVERTER = Iconv.new( 'ISO-8859-15//IGNORE//TRANSLIT', 'utf-8') unless defined?(CONVERTER)
+    CONVERTER = ::Iconv.new( 'ISO-8859-15//IGNORE//TRANSLIT', 'utf-8') unless defined?(CONVERTER)
     # Insert text into a cell
     # Arguments
     # 
