@@ -135,6 +135,7 @@ module PDF::Cell
     # * +font_size+ - Specify the font_size of the entire document.  Defaults to 10
     # * +border+  -  Specify if there should be an outer border.  Defaults to false
     def build(options = {}, &block)
+      cont = nil
       paginate = options.delete(:paginate)
       set_options options.reverse_merge(:font_size => 10)
       i = 0
@@ -142,35 +143,25 @@ module PDF::Cell
       if paginate
         pdf.extend(Transaction::Simple)
         pdf.start_transaction
+        callcc {|continuation| cont = continuation }
       end
-      until end_loop
-        i += 1
-        instance_eval(&block)
-        self.right_base_margin = left_base_margin + options[:width] if options[:width]
-        if options[:border]
-          draw_cell(left_base_margin, upper_limit, right_base_margin, lower_limit)
-        end
-        pdf.y = lower_limit - 10
-        puts "Loop count: #{i}"
-        puts "Lower limit: #{lower_limit}"
-        
-        if paginate 
-          if lower_limit <= 50 && pdf.transaction_open?
-            puts "Rewinding transaction..."
-            pdf.rewind_transaction
-            puts "Start new page..."
-            pdf.start_new_page(true)
-            self.left_base_margin = pdf.absolute_left_margin
-            self.right_base_margin = pdf.absolute_right_margin
-            self.x = left_base_margin
-            puts "Setting Y-values: #{pdf.y}"
-            self.upper_limit = self.y = self.lower_limit = pdf.y  
-          else
-            end_loop = true
-          end
-        else
-          end_loop = true
-        end
+      instance_eval(&block)
+      self.right_base_margin = left_base_margin + options[:width] if options[:width]
+      if options[:border]
+        draw_cell(left_base_margin, upper_limit, right_base_margin, lower_limit)
+      end
+      pdf.y = lower_limit - 10
+      if paginate && cont && lower_limit <= (paginate.is_a?(Fixnum) ? paginate : 20)
+        pdf.rewind_transaction
+        pdf.start_new_page(true)
+        initialize(pdf)
+#        self.left_base_margin = pdf.absolute_left_margin
+#        self.right_base_margin = pdf.absolute_right_margin
+#        self.x = left_base_margin
+#        self.upper_limit = self.y = self.lower_limit = pdf.y  
+        cont.call
+      else
+        pdf.commit_transaction if pdf.transaction_open?
       end
     end
     

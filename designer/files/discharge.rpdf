@@ -1,6 +1,5 @@
 #!/usr/bin/env ruby
 
-puts "Initial Y-Axis: #{pdf.y}"
 PDF::Cell::Base.new(pdf).build :width => 550, :border => false do
   cell :width => 500 do
     text "<b>NATIONAL KIDNEY & TRANSPLANT INSTITUTE</b>", :justification => :center
@@ -46,14 +45,12 @@ PDF::Cell::Base.new(pdf).build :width => 550, :border => false do
   
 end
 
-30.times do
-PDF::Cell::Base.new(pdf).build :width => 550, :border => false, :paginate => true do
-  cell :width => 550 do
-    text "I. PATIENT'S GENERAL DATA"
-    space
-    text "  J.A., a 39 year old femail, married, Filipino, Catholic, a government employee, was born in Cavite and currently residing in Quezon City was admitted on July 7, 2008 and was discharged on July 12, 2008
-    Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Suspendisse sit amet sem quis nunc auctor posuere. Maecenas nulla quam, suscipit a, tempus ac, iaculis et, augue. Phasellus consectetuer urna in orci. Aenean ornare semper metus. Sed quis leo sed metus euismod mollis. Praesent at erat ut nibh pulvinar dignissim. Morbi risus. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Cras at felis eget est adipiscing vulputate. Ut lectus dui, ornare nec, dictum sit amet, rhoncus sed, elit. Mauris elementum. Nullam scelerisque nunc. "
+14.times do
+  PDF::Cell::Base.new(pdf).build :width => 550, :border => false, :paginate => 200 do
+    cell :width => 550 do
+      text "I. PATIENT'S GENERAL DATA"
+      space
+      text "  J.A., a 39 year old femail, married, Filipino, Catholic, a government employee, was born in Cavite and currently residing in Quezon City was admitted on July 7, 2008 and was discharged on July 12, 2008 "
+    end
   end
-end
-
 end
